@@ -1,12 +1,15 @@
 import User from '../models/user'
 import jwt from 'jsonwebtoken'
 
+//generate token for the user
 const tokenForUser = user => {
   const ts = new Date().getTime()
+  //we want to generate the jwt based on out user id
+  //sub stands for subject, and iat - issued at time
   return jwt.sign({ sub: user.id, iat: ts }, process.env.SECRET)
 }
 
-export const signup = (req, res, next) => {
+export const signUp = (req, res, next) => {
   const { email, password } = req.body
 
   if (!email || !password) {
@@ -24,16 +27,23 @@ export const signup = (req, res, next) => {
       return res.status(422).send({ error: 'Email is in use' })
     }
 
+    //create new user instance and save it in the database
     const user = new User({ email, password })
     user.save(err => {
       if (err) {
         return next(err)
       }
-      res.json({ token: tokenForUser(user) })
+      res.json({
+        token: tokenForUser(user),
+        message: 'You have sucessfully signed up'
+      })
     })
   })
 }
 
-export const signin = (req, res, next) => {
-  res.send({ token: tokenForUser(req.user) })
+export const signIn = (req, res, next) => {
+  res.send({
+    token: tokenForUser(req.user),
+    message: 'you made it, you logged in'
+  })
 }
